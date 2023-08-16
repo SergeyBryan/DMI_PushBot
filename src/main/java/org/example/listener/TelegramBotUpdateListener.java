@@ -35,21 +35,16 @@ public class TelegramBotUpdateListener implements UpdatesListener {
     @Override
     public int process(List<Update> updates) {
         try {
-            //                if (update.callbackQuery() != null) {
-            //
-            //                } else if (handlers.get(1).appliesTo(update)) {
-            //                    handlers.get(1).handle(chatId, update);
-            //                }
-            updates.stream().filter(update -> update.message() != null || update.callbackQuery() != null)
+            updates.stream()
+                    .filter(update -> update.message() != null
+                            || update.callbackQuery() != null)
                     .forEach(this::handle);
-        } catch (
-                Exception e) {
+        } catch (Exception e) {
             e.getStackTrace();
         }
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 
-    //Проблема в телеграмм боте, нужно создать в абстрактном классе нормального телеграмм бота
     public void handle(Update update) {
         for (Handler handler : handlers) {
             logger.warn("Хэндлер " + handler.getClass() + " в работе");
@@ -59,7 +54,4 @@ public class TelegramBotUpdateListener implements UpdatesListener {
             }
         }
     }
-
-
 }
-

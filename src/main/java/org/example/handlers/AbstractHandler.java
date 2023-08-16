@@ -17,11 +17,17 @@ import java.util.stream.Collectors;
 @Data
 public abstract class AbstractHandler implements Handler {
 
-    protected int count = 0;
+    protected static int count = 0;
 
     protected String BACK_TO_SPORT = "Назад к спортам";
 
     protected String BACK_TO_INFO = "Назад в меню";
+
+    protected String PUSH_TEXT = "Чтобы сделать пуш отправь сообщение в формате: \n" +
+            "\n<b>8371234 40 размер m</b>\n" +
+            "\n<b>8371234</b>  ---->   код модели\n" +
+            "<b>40</b>       ---->   количество штук\n" +
+            "<b>размер m</b> ---->   комментарий о каком размере идёт речь.";
 
     protected Map<String, String> departmentMenu = Arrays.stream(Departments.values())
             .filter(departments -> !departments.getValue().isEmpty())
