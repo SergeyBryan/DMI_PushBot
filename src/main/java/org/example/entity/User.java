@@ -25,7 +25,7 @@ public class User {
     @Email
     String email;
 
-    String status;
+    Integer status;
 
     Long chatId;
 

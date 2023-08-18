@@ -3,21 +3,19 @@ package org.example.handlers;
 import com.pengrad.telegrambot.TelegramBot;
 import lombok.Data;
 import org.example.handlers.enums.Departments;
-import org.example.handlers.enums.Info;
+import org.example.handlers.enums.MainMenu;
+import org.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 @Data
 public abstract class AbstractHandler implements Handler {
 
-    protected static int count = 0;
+    protected static int count = 2;
 
     protected String BACK_TO_SPORT = "Назад к спортам";
 
@@ -35,10 +33,12 @@ public abstract class AbstractHandler implements Handler {
     protected List<String> departmentList = new ArrayList<>(departmentMenu.keySet());
 
 
-    protected Map<String, String> infoMenu = Arrays.stream(Info.values())
+    protected Map<String, String> infoMenu = Arrays.stream(MainMenu.values())
             .filter(info -> !info.getValue().isEmpty())
-            .collect(Collectors.toMap(Info::getKey, Info::getValue));
+            .collect(Collectors.toMap(MainMenu::getKey, MainMenu::getValue));
     protected List<String> infoList = new ArrayList<>(infoMenu.keySet());
+
+    protected Map<Long, Integer> statusList = new HashMap<>();
 
     @Autowired
     protected TelegramBot telegramBot;

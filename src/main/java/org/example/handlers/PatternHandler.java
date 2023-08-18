@@ -1,9 +1,13 @@
 package org.example.handlers;
 
 import com.pengrad.telegrambot.model.Update;
+import jakarta.annotation.PostConstruct;
 import org.example.entity.Request;
 import org.example.messenger.Messenger;
+import org.example.repository.ModelRepository;
 import org.example.repository.RequestRepository;
+import org.example.service.ModelService;
+import org.example.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -16,91 +20,122 @@ import java.util.regex.Pattern;
 @Component
 public class PatternHandler extends AbstractHandler {
 
-    private final Pattern pattern = Pattern.compile("(\\d{7}) (\\d{1,4}) (\\p{L}+) ([\\p{L}\\d]{1,3})");
-    private final Pattern pattern1 = Pattern.compile("(\\d{7})");
-
+    private final Pattern fullMessagePattern = Pattern.compile("(\\d{7}) (\\d{1,4}) (\\p{L}+) ([\\p{L}\\d]{1,3})");
+    private final Pattern commentMessagePattern = Pattern.compile("(\\d{7}) (\\d{1,4}) ([\\p{L}+\\d]{1,9})");
+    private final Pattern messagePattern = Pattern.compile("(\\d{7}) (\\d{1,4}$)");
+    private final List<Pattern> patternList = List.of(fullMessagePattern, messagePattern, commentMessagePattern);
     private final Logger logger = LoggerFactory.getLogger(PatternHandler.class);
-
     private final RequestRepository requestRepository;
+    private final ModelRepository modelRepository;
+    private final ModelService modelService;
 
-    public PatternHandler(RequestRepository requestRepository) {
+    private final UserService userService;
+
+
+    public PatternHandler(RequestRepository requestRepository, ModelRepository modelRepository, ModelService modelService, UserService userService) {
         this.requestRepository = requestRepository;
+        this.modelRepository = modelRepository;
+        this.modelService = modelService;
+        this.userService = userService;
+    }
+
+    private static List<Integer> models = new ArrayList<>();
+
+    @PostConstruct
+    public void loadAll() {
+        logger.warn("Загружает");
+        models = modelRepository.getModelCodes();
     }
 
     @Override
     public boolean appliesTo(Update update) {
-        if (count == 0) {
-            logger.info("{}", count);
-            if (update.callbackQuery() != null) {
-                return false;
-            }
-//        return returnResult(update);
-//        return update.message().text().matches(pattern.toString());
-            return !update.message().text().startsWith("/start");
+//        if (count == 1) {
+//            return false;
+//        }
+        logger.debug("flag = {}", count);
+        if (update.callbackQuery() != null) {
+            return false;
         }
-        return false;
+        if (!userService.isUserServiceIsZero(update.message().chat().id())) {
+            logger.warn("{}", PatternHandler.class);
+            return false;
+        }
+//        if (!userService.isUserServiceIsZero(update.callbackQuery().message().chat().id())) {
+//            logger.debug("flag = {}", count);
+//            return false;
+//        }
+        return !update.message().text().startsWith("/start");
     }
+
 
     @Override
     public void handle(Update update) {
-        if (returnResult(update)) {
-            Matcher matcher = pattern.matcher(update.message().text());
-            long chatId = update.message().chat().id();
-            if (matcher.find()) {
-                createRequest(update, matcher);
-                Messenger.sendMessage(chatId, "Запрос на пуш создан", telegramBot);
-            }
+        Matcher matcher = null;
+        long chatId = update.message().chat().id();
+        if (isValidMessage(update)) {
+            matcher = patternList.stream().map(pattern1 -> pattern1.matcher(update.message().text()))
+                    .filter(Matcher::find)
+                    .findFirst().orElse(null);
+        }
+        if (matcher != null) {
+            createRequest(matcher);
+            Messenger.sendMessage(chatId, "Запрос на пуш создан", telegramBot);
         }
     }
 
-    private boolean returnResult(Update update) {
+
+    private boolean isValidMessage(Update update) {
         String message = update.message().text();
         long chatId = update.message().chat().id();
-        // Проверка первой части сообщения
-        Pattern pattern1 = Pattern.compile("^\\d{7}$");
-        Matcher matcher1 = pattern1.matcher(message.split(" ")[0]);
-        if (!matcher1.matches()) {
-            Messenger.sendMessage(chatId, "Не правильно введён артикул, артикул должен составлять 7 цифр. \n" +
-                    "Проверьете правильность заполнения запроса", telegramBot);
+        if (!isValidArticle(message)) {
+            Messenger.sendMessage(chatId, "Артикул не найден", telegramBot);
             return false;
         }
-        logger.info("{}", message.split(" ").length);
-        if (message.split(" ").length <= 1) {
-            Messenger.sendMessage(update.message().chat().id(), "В сообщении не указано количество и размер", telegramBot);
+        if (isValidTextLength(message)) {
+            Messenger.sendMessage(chatId, "В сообщении не указано требуемое количество штук", telegramBot);
             return false;
         }
-
-        // Проверка второй части сообщения
-        Pattern pattern2 = Pattern.compile("^\\d{1,3}$");
-        Matcher matcher2 = pattern2.matcher(message.split(" ")[1]);
-        if (!matcher2.matches()) {
-            System.out.println("Ошибка: вторая часть должна состоять из 1-3 цифр");
-            Messenger.sendMessage(chatId, "Не верно указано количество, количество должно состоять от 1 до 3 цифр", telegramBot);
+        if (!isValidQuantity(message)) {
+            Messenger.sendMessage(chatId, "Не верно указано количество, вторая часть сообщения должна состоять от 1 до 3 цифр", telegramBot);
             return false;
         }
-
-        // Проверка наличия третьей части сообщения
-        if (message.split(" ").length < 3) {
-            Messenger.sendMessage(chatId, "Вы не указали коментарий", telegramBot);
-            System.out.println("Ошибка: третья часть сообщения отсутствует");
+        if (isValidMaxTextLength(message)) {
+            Messenger.sendMessage(chatId, "Ваше сообщение не соответствует примеру выше", telegramBot);
             return false;
         }
         return true;
     }
 
-
-    private void createRequest(Update update, Matcher matcher) {
-        if (!matcher.group(2).isBlank()) {
-            logger.info("прошло");
-            Request request = new Request();
-            request.setModelCode(Integer.parseInt(matcher.group(1)));
-            request.setQty(Integer.parseInt(matcher.group(2)));
+    private void createRequest(Matcher matcher) {
+        Request request = new Request();
+        request.setModelCode(Integer.parseInt(matcher.group(1)));
+        request.setQty(Integer.parseInt(matcher.group(2)));
+        if (matcher.groupCount() > 2) {
             request.setComment(matcher.group(3));
-            request.setSize(matcher.group(4));
-            requestRepository.save(request);
-        } else {
-            Messenger.sendMessage(update.message().chat().id(), "В вашем сообщении не указано количество", telegramBot);
         }
+        if (matcher.groupCount() > 3) {
+            request.setSize(matcher.group(4));
+        }
+        requestRepository.save(request);
+    }
+
+    private boolean isValidArticle(String message) {
+        String article = message.split(" ")[0];
+        return models.contains(Integer.parseInt(article));
+    }
+
+    private boolean isValidTextLength(String text) {
+        return text.split(" ").length <= 1;
+    }
+
+    private boolean isValidMaxTextLength(String text) {
+        return text.split(" ").length > 4;
+    }
+
+    private boolean isValidQuantity(String quantity) {
+        Pattern pattern = Pattern.compile("^\\d{1,3}$");
+        Matcher matcher = pattern.matcher(quantity.split(" ")[1]);
+        return matcher.matches();
     }
 
 }

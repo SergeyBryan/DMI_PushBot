@@ -4,6 +4,7 @@ import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.example.handlers.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,6 @@ public class TelegramBotUpdateListener implements UpdatesListener {
     Logger logger = LoggerFactory.getLogger(TelegramBotUpdateListener.class);
 
     private final List<Handler> handlers;
-
 
     public TelegramBotUpdateListener(List<Handler> handlers, TelegramBot telegramBot) {
         this.handlers = handlers;
