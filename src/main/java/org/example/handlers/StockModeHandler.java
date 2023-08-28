@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 @Component
 public class StockModeHandler extends AbstractHandler {
+
     private final Logger logger = LoggerFactory.getLogger(StockModeHandler.class);
     private final Pattern pattern = Pattern.compile("^\\d{1,7}$");
 
@@ -28,13 +29,11 @@ public class StockModeHandler extends AbstractHandler {
 
     @Override
     public boolean appliesTo(Update update) {
-//        if (count == 1 && !update.message().text().equals("/start")) {
-//            return true;
-//        }
-
-        if (!userService.isUserServiceIsZero(update.message().chat().id()) &&
-                !update.message().text().equals("/start")) {
-            return true;
+        if (update.callbackQuery() == null) {
+            long chatId = update.message().chat().id();
+            String message = update.message().text();
+            return !userService.isUserStatusIsZero(chatId) &&
+                    !message.equals("/start");
         }
         return false;
     }
@@ -43,11 +42,12 @@ public class StockModeHandler extends AbstractHandler {
     public void handle(Update update) {
         long chatId = update.message().chat().id();
         Model model = searchResult(update);
+
         if (model != null) {
-            String s = "Артикул: " + model.getModelCode() +
+            String modelInfo = "Артикул: " + model.getModelCode() +
                     "\nНазвание: " + model.getModelName() +
                     "\nКоличество: " + model.getQty();
-            Messenger.sendMessage(chatId, s, telegramBot);
+            Messenger.sendMessage(chatId, modelInfo, telegramBot);
         }
     }
 
@@ -55,11 +55,14 @@ public class StockModeHandler extends AbstractHandler {
         long chatId = update.message().chat().id();
         String message = update.message().text();
         Matcher matcher = pattern.matcher(message);
+
         if (!matcher.matches()) {
             Messenger.sendMessage(chatId, "Не правильно введён артикул, артикул должен составлять не более 7 цифр", telegramBot);
             return null;
         }
+
         Model model = modelService.getModel(Integer.parseInt(message));
+
         if (model == null) {
             Messenger.sendMessage(chatId, "Артикул не найдён, проверьте правильность введённых данных", telegramBot);
             return null;

@@ -4,7 +4,6 @@ import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import jakarta.annotation.PostConstruct;
-import lombok.Getter;
 import org.example.handlers.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +14,7 @@ import java.util.List;
 
 @Service
 public class TelegramBotUpdateListener implements UpdatesListener {
-    Logger logger = LoggerFactory.getLogger(TelegramBotUpdateListener.class);
+    private final Logger logger = LoggerFactory.getLogger(TelegramBotUpdateListener.class);
 
     private final List<Handler> handlers;
 
@@ -47,7 +46,7 @@ public class TelegramBotUpdateListener implements UpdatesListener {
 
     public void handle(Update update) {
         for (Handler handler : handlers) {
-            logger.warn("Хэндлер " + handler.getClass() + " в работе");
+            logger.warn("Processing handler " + handler.getClass());
             if (handler.appliesTo(update)) {
                 handler.handle(update);
                 break;

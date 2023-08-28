@@ -3,17 +3,16 @@ package org.example.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 @Entity
-@Getter
-@Setter
+@Data
 public class Model {
     @Id
-    Integer modelCode;
-    Integer material;
+    @Column(name = "model_code")
+    private Integer modelCode;
+    private Integer material;
     @Column(name = "model_name")
-    String modelName;
-    int qty;
+    private String modelName;
+    private int qty;
 }

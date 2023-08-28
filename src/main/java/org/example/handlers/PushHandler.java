@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+
 @Component
 public class PushHandler extends AbstractHandler {
 
@@ -21,32 +23,26 @@ public class PushHandler extends AbstractHandler {
 
     @Override
     public boolean appliesTo(Update update) {
-//        if (count == 1) {
-//            logger.debug("flag = {}", count);
-//            return false;
-//        }
-//        if (!userService.isUserServiceIsZero(update.message().chat().id())) {
-//            logger.warn("{}", PushHandler.class);
-//            return false;
-//        }
-        if (update.message() != null) {
+        if (update.callbackQuery() == null) {
             return false;
         }
-        logger.info("check 30");
-        logger.info("{}", update.callbackQuery().message().chat().id());
-        if (!userService.isUserServiceIsZero(update.callbackQuery().message().chat().id())) {
-            logger.debug("flag = {}", count);
+
+        long chatId = update.callbackQuery().message().chat().id();
+        String message = update.callbackQuery().data().substring(1);
+
+        if (!userService.isUserStatusIsZero(chatId)) {
             return false;
         }
-        logger.info("checkv2 35");
-        return update.callbackQuery() != null && update.callbackQuery().data().substring(1).equals(MainMenu.HOW_TO_PUSH.getKey());
+
+        return message.equals(MainMenu.HOW_TO_PUSH.getKey());
     }
 
     @Override
     public void handle(Update update) {
         long chatId = update.message() != null ? update.message().chat().id() :
                 update.callbackQuery() != null ? update.callbackQuery().message().chat().id() : 0;
+
         Messenger.editPast(chatId, telegramBot, update);
-        Messenger.sendMessage(chatId, PUSH_TEXT, telegramBot);
+        Messenger.sendPhoto(chatId, telegramBot, new File("src/main/resources/HOW_TO_PUSH.JPG"));
     }
 }

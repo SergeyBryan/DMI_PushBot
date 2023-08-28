@@ -1,22 +1,27 @@
 package org.example.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@Setter
+@Data
+@EntityListeners(AuditingEntityListener.class)
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-    Integer modelCode;
-    Integer qty;
-    String comment;
-    String size;
+    private Long id;
+    private Integer modelCode;
+    private Integer qty;
+    private String comment;
+    private String size;
+    @CreatedDate
+    private LocalDateTime createdDate;
+
+    @ManyToOne
+    private User user;
 
 }

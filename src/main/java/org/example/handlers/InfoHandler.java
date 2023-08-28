@@ -1,7 +1,6 @@
 package org.example.handlers;
 
 import com.pengrad.telegrambot.model.Update;
-import com.pengrad.telegrambot.model.User;
 import org.example.handlers.enums.MainMenu;
 import org.example.messenger.Messenger;
 import org.example.service.UserService;
@@ -15,39 +14,36 @@ import java.util.List;
 @Component
 public class InfoHandler extends AbstractHandler {
 
-    UserService userService;
+    private final UserService userService;
+
+    private final Logger logger = LoggerFactory.getLogger(InfoHandler.class);
 
     public InfoHandler(UserService userService) {
         this.userService = userService;
     }
 
-    private final Logger logger = LoggerFactory.getLogger(InfoHandler.class);
-
-
     @Override
     public boolean appliesTo(Update update) {
-//        if (count == 1) {
-//            logger.debug("flag = {}", count);
-//            return false;
-//        }
-        if (update.message() != null) {
+        if (update.callbackQuery() == null) {
             return false;
         }
-        if (!userService.isUserServiceIsZero(update.callbackQuery().message().chat().id())) {
-            logger.debug("flag = {}", count);
+
+        long chatId = update.callbackQuery().message().chat().id();
+        String message = update.callbackQuery().data().substring(1);
+
+        if (!userService.isUserStatusIsZero(chatId)) {
             return false;
         }
-        if (update.callbackQuery() != null) {
-            return MainMenu.SPORT_INFO.getKey().equals(update.callbackQuery().data().substring(1))
-                    || update.callbackQuery().data().substring(1).equals(BACK_TO_SPORT);
-        }
-        return false;
+
+        return MainMenu.SPORT_INFO.getKey().equals(message)
+                || message.equals(BACK_TO_SPORT);
     }
 
     @Override
     public void handle(Update update) {
         long chatId = update.callbackQuery().message().chat().id();
         String text = update.callbackQuery().data().substring(1);
+
         if (MainMenu.SPORT_INFO.getKey().equals(text) || text.equals(BACK_TO_SPORT)) {
             List<String> list = new ArrayList<>(getDepartmentList());
             list.add(BACK_TO_INFO);

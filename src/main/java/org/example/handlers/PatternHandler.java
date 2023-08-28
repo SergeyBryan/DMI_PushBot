@@ -2,22 +2,27 @@ package org.example.handlers;
 
 import com.pengrad.telegrambot.model.Update;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
+import lombok.Setter;
 import org.example.entity.Request;
+import org.example.entity.User;
 import org.example.messenger.Messenger;
-import org.example.repository.ModelRepository;
-import org.example.repository.RequestRepository;
 import org.example.service.ModelService;
+import org.example.service.RequestService;
 import org.example.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
+@Getter
 public class PatternHandler extends AbstractHandler {
 
     private final Pattern fullMessagePattern = Pattern.compile("(\\d{7}) (\\d{1,4}) (\\p{L}+) ([\\p{L}\\d]{1,3})");
@@ -25,45 +30,40 @@ public class PatternHandler extends AbstractHandler {
     private final Pattern messagePattern = Pattern.compile("(\\d{7}) (\\d{1,4}$)");
     private final List<Pattern> patternList = List.of(fullMessagePattern, messagePattern, commentMessagePattern);
     private final Logger logger = LoggerFactory.getLogger(PatternHandler.class);
-    private final RequestRepository requestRepository;
-    private final ModelRepository modelRepository;
+    private final RequestService requestService;
     private final ModelService modelService;
 
     private final UserService userService;
 
 
-    public PatternHandler(RequestRepository requestRepository, ModelRepository modelRepository, ModelService modelService, UserService userService) {
-        this.requestRepository = requestRepository;
-        this.modelRepository = modelRepository;
+    public PatternHandler(RequestService requestService, ModelService modelService, UserService userService) {
+        this.requestService = requestService;
         this.modelService = modelService;
         this.userService = userService;
     }
 
-    private static List<Integer> models = new ArrayList<>();
+    @Setter
+    private List<Integer> models = new ArrayList<>();
 
     @PostConstruct
+    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.DAYS)
     public void loadAll() {
-        logger.warn("Загружает");
-        models = modelRepository.getModelCodes();
+        logger.warn("Load all models");
+        models = modelService.getModelCodes();
     }
 
     @Override
     public boolean appliesTo(Update update) {
-//        if (count == 1) {
-//            return false;
-//        }
-        logger.debug("flag = {}", count);
         if (update.callbackQuery() != null) {
             return false;
         }
-        if (!userService.isUserServiceIsZero(update.message().chat().id())) {
-            logger.warn("{}", PatternHandler.class);
+
+        long chatId = update.message().chat().id();
+
+        if (!userService.isUserStatusIsZero(chatId)) {
             return false;
         }
-//        if (!userService.isUserServiceIsZero(update.callbackQuery().message().chat().id())) {
-//            logger.debug("flag = {}", count);
-//            return false;
-//        }
+
         return !update.message().text().startsWith("/start");
     }
 
@@ -77,8 +77,9 @@ public class PatternHandler extends AbstractHandler {
                     .filter(Matcher::find)
                     .findFirst().orElse(null);
         }
+
         if (matcher != null) {
-            createRequest(matcher);
+            createRequest(matcher, chatId);
             Messenger.sendMessage(chatId, "Запрос на пуш создан", telegramBot);
         }
     }
@@ -106,17 +107,19 @@ public class PatternHandler extends AbstractHandler {
         return true;
     }
 
-    private void createRequest(Matcher matcher) {
+    private void createRequest(Matcher matcher, long chatId) {
         Request request = new Request();
         request.setModelCode(Integer.parseInt(matcher.group(1)));
         request.setQty(Integer.parseInt(matcher.group(2)));
+        User user = userService.findByChatId(chatId);
+        request.setUser(user);
         if (matcher.groupCount() > 2) {
             request.setComment(matcher.group(3));
         }
         if (matcher.groupCount() > 3) {
             request.setSize(matcher.group(4));
         }
-        requestRepository.save(request);
+        requestService.create(request);
     }
 
     private boolean isValidArticle(String message) {

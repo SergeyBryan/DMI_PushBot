@@ -11,15 +11,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class StockHandler extends AbstractHandler {
 
-    String HOW_TO_CHECK = "В данный момент вы переключились на функцию просмотра стока. \n" +
+    private final String HOW_TO_CHECK = "В данный момент вы переключились на функцию просмотра стока. \n" +
             "Введите любой артикул в чате, чтобы посмотреть наличие стока.\n" +
             "Чтобы выйти из функции просмотра стока введите /start.";
 
-    Logger logger = LoggerFactory.getLogger(StockHandler.class);
-    private StockModeHandler checkStockHandler;
-    UserService userService;
+    private final Logger logger = LoggerFactory.getLogger(StockHandler.class);
+    private final StockModeHandler checkStockHandler;
+    private final UserService userService;
 
-    public StockHandler(UserService userService) {
+    public StockHandler(StockModeHandler checkStockHandler, UserService userService) {
+        this.checkStockHandler = checkStockHandler;
         this.userService = userService;
     }
 
@@ -28,16 +29,17 @@ public class StockHandler extends AbstractHandler {
         if (update.message() != null) {
             return false;
         }
-        return update.callbackQuery() != null && update.callbackQuery().data().substring(1).equals(MainMenu.STOCK_INFO.getKey());
+        String message = update.callbackQuery().data().substring(1);
+        return update.callbackQuery() != null &&
+                message.equals(MainMenu.STOCK_INFO.getKey());
     }
 
     @Override
     public void handle(Update update) {
-        logger.info("Схватывает");
         long chatId = update.callbackQuery().message().chat().id();
+
         Messenger.editPast(chatId, telegramBot, update);
         Messenger.sendMessage(chatId, HOW_TO_CHECK, telegramBot);
-//        count = 1;
         userService.userChangeStatus(chatId, 1);
         checkStockHandler.handle(update);
     }
