@@ -21,13 +21,29 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Pattern Handler class for handling requests based on regular expressions.
+ * This is Spring boot component and extends from AbstractHandler.
+ */
+
 @Component
 @Getter
 public class PatternHandler extends AbstractHandler {
-
+    /**
+     * Regular expression for full text message.
+     */
     private final Pattern fullMessagePattern = Pattern.compile("(\\d{7}) (\\d{1,4}) (\\p{L}+) ([\\p{L}\\d]{1,3})");
+    /**
+     * Regular expression for comment message only.
+     */
     private final Pattern commentMessagePattern = Pattern.compile("(\\d{7}) (\\d{1,4}) ([\\p{L}+\\d]{1,9})");
+    /**
+     * Regular expression for message only.
+     */
     private final Pattern messagePattern = Pattern.compile("(\\d{7}) (\\d{1,4}$)");
+    /**
+     * There are list of regular expressions .
+     */
     private final List<Pattern> patternList = List.of(fullMessagePattern, messagePattern, commentMessagePattern);
     private final Logger logger = LoggerFactory.getLogger(PatternHandler.class);
     private final RequestService requestService;
@@ -45,6 +61,10 @@ public class PatternHandler extends AbstractHandler {
     @Setter
     private List<Integer> models = new ArrayList<>();
 
+    /**
+     * A method called after creating an instance of the class.
+     * Loads all models and displays a warning in the log.
+     */
     @PostConstruct
     @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.DAYS)
     public void loadAll() {
@@ -52,6 +72,12 @@ public class PatternHandler extends AbstractHandler {
         models = modelService.getModelCodes();
     }
 
+    /**
+     * Checks if this handler is applicable to the given update.
+     *
+     * @param update The update to check.
+     * @return true if the handler is applicable, false otherwise.
+     */
     @Override
     public boolean appliesTo(Update update) {
         if (update.callbackQuery() != null) {
@@ -67,7 +93,11 @@ public class PatternHandler extends AbstractHandler {
         return !update.message().text().startsWith("/start");
     }
 
-
+    /**
+     * Handles the given update.
+     *
+     * @param update The update to handle.
+     */
     @Override
     public void handle(Update update) {
         Matcher matcher = null;
@@ -84,7 +114,12 @@ public class PatternHandler extends AbstractHandler {
         }
     }
 
-
+    /**
+     * Checks whether a given message is valid.
+     *
+     * @param update The update containing the message.
+     * @return true if the message is valid, false otherwise.
+     */
     private boolean isValidMessage(Update update) {
         String message = update.message().text();
         long chatId = update.message().chat().id();
@@ -107,6 +142,11 @@ public class PatternHandler extends AbstractHandler {
         return true;
     }
 
+    /**
+     * A method is responsible for creating a new request.
+     *
+     * @param matcher find appropriate text message.
+     */
     private void createRequest(Matcher matcher, long chatId) {
         Request request = new Request();
         request.setModelCode(Integer.parseInt(matcher.group(1)));

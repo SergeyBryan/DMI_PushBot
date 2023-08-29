@@ -10,6 +10,11 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 
+/**
+ * Push Handler class for handling push-related requests.
+ * This is Spring boot component and extends from AbstractHandler.
+ */
+
 @Component
 public class PushHandler extends AbstractHandler {
 
@@ -20,7 +25,12 @@ public class PushHandler extends AbstractHandler {
         this.userService = userService;
     }
 
-
+    /**
+     * Checks if this handler is applicable to the given update.
+     *
+     * @param update The update to check.
+     * @return true if the handler is applicable, false otherwise.
+     */
     @Override
     public boolean appliesTo(Update update) {
         if (update.callbackQuery() == null) {
@@ -37,6 +47,11 @@ public class PushHandler extends AbstractHandler {
         return message.equals(MainMenu.HOW_TO_PUSH.getKey());
     }
 
+    /**
+     * Handles the given update.
+     *
+     * @param update The update to handle.
+     */
     @Override
     public void handle(Update update) {
         long chatId = update.message() != null ? update.message().chat().id() :

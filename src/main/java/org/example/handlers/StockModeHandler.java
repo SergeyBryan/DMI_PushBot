@@ -11,7 +11,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+/**
+ * StockModel Handler class for handling searching stock requests.
+ * This is Spring boot component and extends from AbstractHandler.
+ */
 @Component
 public class StockModeHandler extends AbstractHandler {
 
@@ -26,7 +29,12 @@ public class StockModeHandler extends AbstractHandler {
         this.modelService = modelService;
         this.userService = userService;
     }
-
+    /**
+     * Checks if this handler is applicable to the given update.
+     *
+     * @param update The update to check.
+     * @return true if the handler is applicable, false otherwise.
+     */
     @Override
     public boolean appliesTo(Update update) {
         if (update.callbackQuery() == null) {
@@ -37,7 +45,11 @@ public class StockModeHandler extends AbstractHandler {
         }
         return false;
     }
-
+    /**
+     * Handles the given update.
+     *
+     * @param update The update to handle.
+     */
     @Override
     public void handle(Update update) {
         long chatId = update.message().chat().id();
