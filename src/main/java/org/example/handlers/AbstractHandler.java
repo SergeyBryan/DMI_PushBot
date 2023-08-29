@@ -9,7 +9,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+/**
+ * Abstract base class for implementing a handler.
+ */
 @Component
 @Data
 public abstract class AbstractHandler implements Handler {

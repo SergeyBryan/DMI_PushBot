@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * Handler class for handling info-related requests.
+ */
 @Component
 public class InfoHandler extends AbstractHandler {
 
@@ -21,7 +23,12 @@ public class InfoHandler extends AbstractHandler {
     public InfoHandler(UserService userService) {
         this.userService = userService;
     }
-
+    /**
+     * Checks if this handler is applicable to the given update.
+     *
+     * @param update The update to check.
+     * @return true if the handler is applicable, false otherwise.
+     */
     @Override
     public boolean appliesTo(Update update) {
         if (update.callbackQuery() == null) {
@@ -38,7 +45,11 @@ public class InfoHandler extends AbstractHandler {
         return MainMenu.SPORT_INFO.getKey().equals(message)
                 || message.equals(BACK_TO_SPORT);
     }
-
+    /**
+     * Handles the given update.
+     *
+     * @param update The update to handle.
+     */
     @Override
     public void handle(Update update) {
         long chatId = update.callbackQuery().message().chat().id();

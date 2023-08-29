@@ -9,17 +9,28 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 
-
+/**
+ * Handler class for handling department-related requests.
+ */
 @Component
 public class DepartmentHandler extends AbstractHandler {
     private final UserService userService;
 
     private final Logger LOG = LoggerFactory.getLogger(DepartmentHandler.class);
-
+    /**
+     * Constructs a DepartmentHandler instance with the given UserService dependency.
+     *
+     * @param userService The UserService instance to use for user-related operations.
+     */
     public DepartmentHandler(UserService userService) {
         this.userService = userService;
     }
-
+    /**
+     * Checks if this handler is applicable to the given update.
+     *
+     * @param update The update to check.
+     * @return true if the handler is applicable, false otherwise.
+     */
     @Override
     public boolean appliesTo(Update update) {
         if (update.callbackQuery() == null) {
@@ -36,7 +47,11 @@ public class DepartmentHandler extends AbstractHandler {
         return departmentList.contains(message);
     }
 
-
+    /**
+     * Handles the given update.
+     *
+     * @param update The update to handle.
+     */
     @Override
     public void handle(Update update) {
         long chatId = update.callbackQuery().message().chat().id();

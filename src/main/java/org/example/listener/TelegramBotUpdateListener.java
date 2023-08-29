@@ -12,12 +12,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * The TelegramBotUpdateListener class is a service that listens for updates from the Telegram Bot API.
+ * Implements the UpdatesListener interface.
+ */
 @Service
 public class TelegramBotUpdateListener implements UpdatesListener {
     private final Logger logger = LoggerFactory.getLogger(TelegramBotUpdateListener.class);
 
     private final List<Handler> handlers;
 
+    /**
+     * Constructor for the TelegramBotUpdateListener class.
+     *
+     * @param handlers    A list of handlers to process the updates.
+     * @param telegramBot The TelegramBot instance to use for sending and receiving messages.
+     */
     public TelegramBotUpdateListener(List<Handler> handlers, TelegramBot telegramBot) {
         this.handlers = handlers;
         this.telegramBot = telegramBot;
@@ -26,11 +36,21 @@ public class TelegramBotUpdateListener implements UpdatesListener {
     @Autowired
     private final TelegramBot telegramBot;
 
+    /**
+     * Initialization method called after creating an instance of the class.
+     * Sets the updates listener of the TelegramBot instance to this listener.
+     */
     @PostConstruct
     public void init() {
         telegramBot.setUpdatesListener(this);
     }
 
+    /**
+     * Method for processing a list of updates.
+     *
+     * @param updates The updates to process.
+     * @return The result of the update processing.
+     */
     @Override
     public int process(List<Update> updates) {
         try {
@@ -44,6 +64,12 @@ public class TelegramBotUpdateListener implements UpdatesListener {
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 
+    /**
+     * Method for handling an individual update.
+     * Iterates through the list of handlers and calls their appliesTo and handle methods.
+     *
+     * @param update The update to handle.
+     */
     public void handle(Update update) {
         for (Handler handler : handlers) {
             logger.warn("Processing handler " + handler.getClass());

@@ -7,7 +7,10 @@ import org.example.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
+/**
+ * Stock Handler class for handling stock-related requests.
+ * This is Spring boot component and extends from AbstractHandler.
+ */
 @Component
 public class StockHandler extends AbstractHandler {
 
@@ -23,7 +26,12 @@ public class StockHandler extends AbstractHandler {
         this.checkStockHandler = checkStockHandler;
         this.userService = userService;
     }
-
+    /**
+     * Checks if this handler is applicable to the given update.
+     *
+     * @param update The update to check.
+     * @return true if the handler is applicable, false otherwise.
+     */
     @Override
     public boolean appliesTo(Update update) {
         if (update.message() != null) {
@@ -33,7 +41,11 @@ public class StockHandler extends AbstractHandler {
         return update.callbackQuery() != null &&
                 message.equals(MainMenu.STOCK_INFO.getKey());
     }
-
+    /**
+     * Handles the given update.
+     *
+     * @param update The update to handle.
+     */
     @Override
     public void handle(Update update) {
         long chatId = update.callbackQuery().message().chat().id();

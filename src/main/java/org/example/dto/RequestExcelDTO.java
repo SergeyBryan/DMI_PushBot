@@ -4,7 +4,9 @@ import com.ebay.xcelite.annotations.Column;
 import com.ebay.xcelite.annotations.Row;
 import lombok.Data;
 
-
+/**
+ * Data Transfer Object class for representing a request in Excel format.
+ */
 @Data
 @Row(colsOrder = {"model_code", "qty", "comment", "size", "email"})
 public class RequestExcelDTO {

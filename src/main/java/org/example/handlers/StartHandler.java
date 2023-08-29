@@ -11,7 +11,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 
-
+/**
+ * Start Handler class for handling start-related requests.
+ * This is Spring boot component and extends from AbstractHandler.
+ */
 @Component
 @Order(1)
 public class StartHandler extends AbstractHandler {
@@ -27,12 +30,23 @@ public class StartHandler extends AbstractHandler {
         this.userService = userService;
     }
 
+    /**
+     * Checks if this handler is applicable to the given update.
+     *
+     * @param update The update to check.
+     * @return true if the handler is applicable, false otherwise.
+     */
     @Override
     public boolean appliesTo(Update update) {
         return (update.message() != null && update.message().text().equals("/start")
                 || (update.callbackQuery() != null && update.callbackQuery().data().equals("/" + BACK_TO_INFO)));
     }
 
+    /**
+     * Handles the given update.
+     *
+     * @param update The update to handle.
+     */
     @Override
     public void handle(Update update) {
         long chatId = update.message() != null ? update.message().chat().id() :
@@ -52,6 +66,11 @@ public class StartHandler extends AbstractHandler {
                 new ArrayList<>(infoMenu.keySet()));
     }
 
+    /**
+     * A method for creating user based on update.
+     *
+     * @param update which contains user data.
+     */
     private void createUser(Update update) {
         if (update.message() != null) {
             long chatId = update.message().chat().id();
