@@ -17,8 +17,8 @@ The bot can:
 - Find relevant business information.
 - Assist in contacting the supply department.
 - Help find stock availability schedules.
-- Assist in finding information about color choices.
-- Help find updated DAU (Daily Active Users) plans.
+- Assist in finding information about range choices.
+- Help find updated DAO plans.
 - Assist in processing stock push requests.
 - Provide information on warehouse stock availability.
 
