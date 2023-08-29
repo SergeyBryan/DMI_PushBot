@@ -44,10 +44,10 @@ The bot can:
 * Maven
 
 #### Used libraries:
-org.projectlombok
-org.postgresql
-com.github.pengrad
-org.liquibase
-org.springdoc
-org.mapstruct
-com.ebay
++ org.projectlombok
++ org.postgresql
++ com.github.pengrad
++ org.liquibase
++ org.springdoc
++ org.mapstruct
++ com.ebay
