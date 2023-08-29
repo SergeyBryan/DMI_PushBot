@@ -9,6 +9,20 @@ It allows users to quickly access key information within their scope.
 - Automate, speed up, and simplify the process of searching for relevant information for retail employees.
 - Create a unified tool for business functionality between retail and supply department.
 
+## Installation
+1. Clone the repository.
+2. Install Java 19 and Maven.
+3. Configure the PostgreSQL database and update the application.properties file.
+4. Build the project using Maven.
+5. Run the application using the provided command.
+6. Access the bot on Telegram and start using it.
+
+## How to Use
+1. Open Telegram and search for DMIPush.
+2. Start a conversation with the bot.
+3. Enter your query or choose from the available options.
+4. DMIPush bot will provide you with the requested information or guide you through the process.
+
 ## Project Author:
 [Sergey](https://github.com/SergeyBryan)
 
